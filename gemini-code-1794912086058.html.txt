@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demonstração de Colisão de Hash</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #38bdf8;
+            --accent: #818cf8;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #4ade80;
+            --error: #f87171;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background-color: #0f172a;
+            color: var(--text);
+            font-size: 1rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        .results {
+            margin-top: 24px;
+            background-color: #0b0f19;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        .hash-display {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 16px;
+            font-weight: bold;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .match {
+            background-color: rgba(74, 222, 128, 0.15);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .no-match {
+            background-color: rgba(248, 113, 113, 0.15);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            justify-content: center;
+        }
+
+        button {
+            background-color: #334155;
+            color: var(--text);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary);
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Simulador de Hash e Colisão</h1>
+        <p class="subtitle">Teste palavras diferentes com a função <code>calcula_hash</code></p>
+
+        <div class="input-group">
+            <label for="palavra1">Palavra 1 (mínimo 2 letras):</label>
+            <input type="text" id="palavra1" value="amor" oninput="processarHash()">
+        </div>
+
+        <div class="input-group">
+            <label for="palavra2">Palavra 2 (mínimo 2 letras):</label>
+            <input type="text" id="palavra2" value="roma" oninput="processarHash()">
+        </div>
+
+        <div class="results">
+            <div class="hash-display">
+                <span>Hash P1:</span>
+                <span id="valorHash1">0</span>
+            </div>
+            <div class="hash-display">
+                <span>Hash P2:</span>
+                <span id="valorHash2">0</span>
+            </div>
+            <div id="statusMensagem" class="status match">Colisão Encontrada!</div>
+        </div>
+
+        <div class="preset-buttons">
+            <button onclick="carregarExemplo('amor', 'roma')">Amor / Roma</button>
+            <button onclick="carregarExemplo('alto', 'lato')">Alto / Lato</button>
+            <button onclick="carregarExemplo('ar', 'ra')">Ar / Ra</button>
+        </div>
+    </div>
+
+    <script>
+        // Função de hash simples baseada na soma dos códigos ASCII dos caracteres
+        function calcula_hash(palavra) {
+            let hash = 0;
+            for (let i = 0; i < palavra.length; i++) {
+                hash += palavra.charCodeAt(i);
+            }
+            return hash;
+        }
+
+        function processarHash() {
+            const p1 = document.getElementById('palavra1').value;
+            const p2 = document.getElementById('palavra2').value;
+
+            const h1 = calcula_hash(p1);
+            const h2 = calcula_hash(p2);
+
+            document.getElementById('valorHash1').innerText = h1;
+            document.getElementById('valorHash2').innerText = h2;
+
+            const statusEl = document.getElementById('statusMensagem');
+
+            // Verifica se são diferentes e possuem o mesmo hash
+            if (p1 !== p2 && p1.length >= 2 && p2.length >= 2 && h1 === h2) {
+                statusEl.className = "status match";
+                statusEl.innerText = "✨ Colisão Encontrada! Mesmo hash para palavras diferentes.";
+            } else if (p1 === p2) {
+                statusEl.className = "status no-match";
+                statusEl.innerText = "⚠️ Digite palavras diferentes.";
+            } else {
+                statusEl.className = "status no-match";
+                statusEl.innerText = "❌ Sem colisão (Hashes diferentes).";
+            }
+        }
+
+        function carregarExemplo(p1, p2) {
+            document.getElementById('palavra1').value = p1;
+            document.getElementById('palavra2').value = p2;
+            processarHash();
+        }
+
+        // Executa no carregamento inicial
+        processarHash();
+    </script>
+</body>
+</html>
